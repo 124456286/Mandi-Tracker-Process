@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Mandi Profiles{% endblock %}
+{% block content %}
+<section class="profiles-page">
+  <div class="profiles-hero">
+    <div>
+      <div class="eyebrow">SEPARATE DATABASES</div>
+      <h1>👤 Mandi Profiles</h1>
+      <p>Create a separate account/database for each mandi account. Data from one profile never appears in another profile.</p>
+    </div>
+    <div class="profiles-hero-icon">🗄️</div>
+  </div>
+
+  <div class="profile-create-card">
+    <div>
+      <h2>➕ Add New Mandi Account</h2>
+      <p>Each new profile automatically gets its own SQLite database.</p>
+    </div>
+    <form method="POST" action="{{ url_for('create_profile') }}" class="profile-create-form">
+      <input type="text" name="name" placeholder="Example: Mandi Account 2" maxlength="80" required>
+      <button type="submit">Create Profile</button>
+    </form>
+  </div>
+
+  <div class="profiles-grid">
+    {% for profile in all_profiles %}
+    <div class="profile-card {% if active_profile and profile['id'] == active_profile['id'] %}active{% endif %}">
+      <div class="profile-card-top">
+        <span class="profile-big-icon">🏪</span>
+        {% if active_profile and profile['id'] == active_profile['id'] %}<span class="current-pill">CURRENT</span>{% endif %}
+      </div>
+      <h3>{{ profile['name'] }}</h3>
+      <p class="database-name">Database: <code>{{ profile['db_filename'] }}</code></p>
+      <a class="switch-profile-btn" href="{{ url_for('switch_profile', profile_id=profile['id']) }}">{% if active_profile and profile['id'] == active_profile['id'] %}✓ Working in this profile{% else %}Switch to this profile{% endif %}</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="profile-safety-note">
+    <span>🔒</span>
+    <div><strong>Data separation is built into the database.</strong><br>
+    Profile 1 uses your existing <code>mandi.db</code>. New profiles use their own database files such as <code>mandi_profile_2.db</code>. Adding, importing, deleting or exporting purchases only works on the currently selected profile.</div>
+  </div>
+</section>
+{% endblock %}

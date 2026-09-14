@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}Daily Purchase Average | Mandi Tracker{% endblock %}
+{% block content %}
+<div class="daily-report-page">
+  <section class="daily-report-hero">
+    <div class="daily-hero-copy">
+      <div class="daily-kicker"><span>📅</span> DAY-WISE PURCHASE REPORT</div>
+      <h1>Daily Purchase Average</h1>
+      <p>Track the weighted purchase average for every day. Wheat is consolidated into <strong>one daily average across all varieties</strong>, while other grains remain separated by variety.</p>
+      <div class="daily-hero-actions">
+        <a class="daily-primary-btn" href="{{ url_for('export_daily_grain') }}">⬇ Export Complete Excel</a>
+        <a class="daily-secondary-btn" href="{{ url_for('dashboard') }}">← Dashboard</a>
+      </div>
+    </div>
+    <div class="daily-hero-visual" aria-hidden="true">
+      <div class="daily-glow"></div>
+      <div class="daily-sun"></div>
+      <div class="daily-field field-a"></div>
+      <div class="daily-field field-b"></div>
+      <div class="daily-wheat-icon">🌾</div>
+      <div class="daily-floating-card"><span>AVG</span><strong>₹</strong><small>WEIGHTED</small></div>
+    </div>
+  </section>
+
+  <section class="daily-mini-stats">
+    <div class="daily-mini-card green"><span class="mini-icon">📅</span><div><small>DAYS AVAILABLE</small><strong>{{ day_summaries|length }}</strong><em>purchase days</em></div></div>
+    <div class="daily-mini-card blue"><span class="mini-icon">🌾</span><div><small>REPORT ROWS</small><strong>{{ daily_grain_analysis|length }}</strong><em>daily grain reports</em></div></div>
+    <div class="daily-mini-card gold"><span class="mini-icon">🌾</span><div><small>WHEAT METHOD</small><strong>ALL</strong><em>varieties combined</em></div></div>
+    <div class="daily-mini-card mustard"><span class="mini-icon">🌼</span><div><small>MUSTARD</small><strong>DAILY</strong><em>weighted average</em></div></div>
+    <div class="daily-mini-card paddy"><span class="mini-icon">🌾</span><div><small>PADDY</small><strong>DAILY</strong><em>all varieties combined</em></div></div>
+    <div class="daily-mini-card methi"><span class="mini-icon">🌿</span><div><small>METHI SEEDS</small><strong>DAILY</strong><em>all varieties combined</em></div></div>
+    <div class="daily-mini-card purple"><span class="mini-icon">₹</span><div><small>CALCULATION</small><strong>WEIGHTED</strong><em>amount ÷ quantity</em></div></div>
+  </section>
+
+  <section class="daily-report-panel">
+    <div class="daily-panel-head">
+      <div>
+        <div class="daily-section-label">🌾 DAILY GRAIN REPORT</div>
+        <h2>Daily Average by Grain</h2>
+        <p>Wheat, Paddy and Methi Seeds varieties are merged into one <b>All Varieties</b> row for each day. Mustard is tracked as its own grain.</p>
+      </div>
+      <a class="daily-export-all" href="{{ url_for('export_daily_grain') }}">⬇ Export All</a>
+    </div>
+
+    <div class="daily-toolbar">
+      <div class="daily-filter-wrap"><span>📅</span><label for="dayFilter">View date</label><select id="dayFilter"><option value="all">All dates</option>{% for d in day_summaries %}<option value="{{ d['day'] }}">{{ d['day'] }}</option>{% endfor %}</select></div>
+      <div id="dailyRowCount" class="daily-count">{{ daily_grain_analysis|length }} rows</div>
+    </div>
+
+    <div class="daily-table-shell">
+      <table class="daily-modern-table" id="dailyGrainTable">
+        <thead><tr><th>Date</th><th>Grain</th><th>Variety</th><th>Quantity</th><th>Total Amount</th><th>Daily Avg</th><th>Export</th></tr></thead>
+        <tbody>
+        {% for d in daily_grain_analysis %}
+          <tr data-day="{{ d['day'] }}" class="{% if d['grain']|lower == 'wheat' %}wheat-row{% endif %}">
+            <td><span class="daily-date-pill">📅 {{ d['day'] }}</span></td>
+            <td>{% if d['grain']|lower == 'wheat' %}<span class="daily-grain-pill wheat-pill">🌾 Wheat</span>{% elif d['grain']|lower == 'paddy' %}<span class="daily-grain-pill paddy-pill">🌾 Paddy</span>{% elif 'methi' in d['grain']|lower or 'fenugreek' in d['grain']|lower or 'मेथी' in d['grain'] %}<span class="daily-grain-pill methi-pill">🌿 Methi Seeds</span>{% else %}<span class="daily-grain-pill">🌾 {{ d['grain'] }}</span>{% endif %}</td>
+            <td>{% if d['grain']|lower == 'wheat' or d['grain']|lower == 'paddy' or 'methi' in d['grain']|lower or 'fenugreek' in d['grain']|lower or 'मेथी' in d['grain'] %}<span class="daily-all-variety">All Varieties</span>{% elif d['variety'] %}<span class="daily-variety-pill">{{ d['variety'] }}</span>{% else %}<span class="daily-muted">—</span>{% endif %}</td>
+            <td><span class="daily-number">{{ "%.2f"|format(d['qty'] or 0) }}</span><small>Qtl</small></td>
+            <td><span class="daily-amount">₹{{ "%.2f"|format(d['amount'] or 0) }}</span></td>
+            <td><span class="daily-avg-rate">₹{{ "%.2f"|format(d['avg_rate'] or 0) }}</span><small>weighted avg</small></td>
+            <td><a class="daily-row-export" href="{{ url_for('export_daily_grain_day', day=d['day']) }}" title="Export {{ d['day'] }}">Excel</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="daily-empty"><div>🌾</div><strong>No daily purchase data yet</strong><span>Import your purchase Excel files to generate the report.</span></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="daily-table-foot"><span>💡 Wheat, Paddy and Methi Seeds are always calculated together across all recorded varieties.</span><a href="{{ url_for('export_daily_grain') }}">Export complete report →</a></div>
+  </section>
+
+  <section class="daily-moong-panel mustard-daily-panel">
+    <div class="daily-panel-head moong-head">
+      <div>
+        <div class="daily-section-label">🌼 MUSTARD DAILY ANALYSIS</div>
+        <h2>Mustard Daily Average</h2>
+        <p>All Mustard purchases are combined by date and shown as a weighted average across recorded varieties.</p>
+      </div>
+      <a class="daily-export-all moong-export" href="{{ url_for('export_daily_grain') }}">⬇ Export Grain Report</a>
+    </div>
+    <div class="daily-table-shell">
+      <table class="daily-modern-table">
+        <thead><tr><th>Date</th><th>Quantity</th><th>Total Amount</th><th>Mustard Daily Avg</th><th>Report</th></tr></thead>
+        <tbody>
+        {% for d in day_summaries %}
+          {% set ns = namespace(q=0, a=0) %}
+          {% for r in daily_grain_analysis if r['day'] == d['day'] and ('mustard' in r['grain']|lower or 'sarso' in r['grain']|lower or 'sarson' in r['grain']|lower or 'सरसों' in r['grain'] or 'सरसो' in r['grain']) %}
+            {% set ns.q = ns.q + r['qty'] %}{% set ns.a = ns.a + r['amount'] %}
+          {% endfor %}
+          {% if ns.q > 0 %}
+          <tr>
+            <td><span class="daily-date-pill">📅 {{ d['day'] }}</span></td>
+            <td><span class="daily-number">{{ "%.2f"|format(ns.q) }}</span><small>Qtl</small></td>
+            <td><span class="daily-amount">₹{{ "%.2f"|format(ns.a) }}</span></td>
+            <td><span class="daily-avg-rate">₹{{ "%.2f"|format(ns.a / ns.q) }}</span><small>weighted avg</small></td>
+            <td><a class="daily-row-export" href="{{ url_for('export_daily_grain_day', day=d['day']) }}">Excel</a></td>
+          </tr>
+          {% endif %}
+        {% else %}<tr><td colspan="5" class="daily-empty"><div>🌼</div><strong>No Mustard purchase data yet</strong><span>Mustard records will appear here automatically after import.</span></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="daily-table-foot moong-foot"><span>💡 Mustard varieties are combined into one weighted daily average.</span><a href="{{ url_for('export_daily_grain') }}">Export complete grain report →</a></div>
+  </section>
+
+<section class="daily-moong-panel paddy-daily-panel">
+    <div class="daily-panel-head moong-head">
+      <div>
+        <div class="daily-section-label">🌾 PADDY DAILY ANALYSIS</div>
+        <h2>Paddy Daily Average</h2>
+        <p>All Paddy purchases are combined by date and shown as a weighted average across all recorded varieties.</p>
+      </div>
+      <a class="daily-export-all moong-export" href="{{ url_for('export_daily_grain') }}">⬇ Export Grain Report</a>
+    </div>
+    <div class="daily-table-shell">
+      <table class="daily-modern-table">
+        <thead><tr><th>Date</th><th>Quantity</th><th>Total Amount</th><th>Paddy Daily Avg</th><th>Report</th></tr></thead>
+        <tbody>
+        {% for d in day_summaries %}
+          {% set ns = namespace(q=0, a=0) %}
+          {% for r in daily_grain_analysis if r['day'] == d['day'] and r['grain']|lower == 'paddy' %}
+            {% set ns.q = ns.q + r['qty'] %}{% set ns.a = ns.a + r['amount'] %}
+          {% endfor %}
+          {% if ns.q > 0 %}
+          <tr>
+            <td><span class="daily-date-pill">📅 {{ d['day'] }}</span></td>
+            <td><span class="daily-number">{{ "%.2f"|format(ns.q) }}</span><small>Qtl</small></td>
+            <td><span class="daily-amount">₹{{ "%.2f"|format(ns.a) }}</span></td>
+            <td><span class="daily-avg-rate">₹{{ "%.2f"|format(ns.a / ns.q) }}</span><small>weighted avg</small></td>
+            <td><a class="daily-row-export" href="{{ url_for('export_daily_grain_day', day=d['day']) }}">Excel</a></td>
+          </tr>
+          {% endif %}
+        {% else %}<tr><td colspan="5" class="daily-empty"><div>🌾</div><strong>No Paddy purchase data yet</strong><span>Paddy records will appear here automatically after import.</span></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="daily-table-foot moong-foot"><span>💡 All Paddy varieties are combined into one weighted daily average.</span><a href="{{ url_for('export_daily_grain') }}">Export complete grain report →</a></div>
+  </section>
+
+<section class="daily-moong-panel methi-daily-panel">
+    <div class="daily-panel-head moong-head">
+      <div>
+        <div class="daily-section-label">🌿 METHI SEEDS DAILY ANALYSIS</div>
+        <h2>Methi Seeds Daily Average</h2>
+        <p>All Methi Seeds purchases are combined by date and shown as a weighted average across recorded varieties.</p>
+      </div>
+      <a class="daily-export-all moong-export" href="{{ url_for('export_daily_grain') }}">⬇ Export Grain Report</a>
+    </div>
+    <div class="daily-table-shell">
+      <table class="daily-modern-table">
+        <thead><tr><th>Date</th><th>Quantity</th><th>Total Amount</th><th>Methi Seeds Daily Avg</th><th>Report</th></tr></thead>
+        <tbody>
+        {% for d in day_summaries %}
+          {% set ns = namespace(q=0, a=0) %}
+          {% for r in daily_grain_analysis if r['day'] == d['day'] and ('methi' in r['grain']|lower or 'fenugreek' in r['grain']|lower or 'मेथी' in r['grain']) %}
+            {% set ns.q = ns.q + r['qty'] %}{% set ns.a = ns.a + r['amount'] %}
+          {% endfor %}
+          {% if ns.q > 0 %}
+          <tr>
+            <td><span class="daily-date-pill">📅 {{ d['day'] }}</span></td>
+            <td><span class="daily-number">{{ "%.2f"|format(ns.q) }}</span><small>Qtl</small></td>
+            <td><span class="daily-amount">₹{{ "%.2f"|format(ns.a) }}</span></td>
+            <td><span class="daily-avg-rate">₹{{ "%.2f"|format(ns.a / ns.q) }}</span><small>weighted avg</small></td>
+            <td><a class="daily-row-export" href="{{ url_for('export_daily_grain_day', day=d['day']) }}">Excel</a></td>
+          </tr>
+          {% endif %}
+        {% else %}<tr><td colspan="5" class="daily-empty"><div>🌿</div><strong>No Methi Seeds purchase data yet</strong><span>Methi Seeds records will appear here automatically after import.</span></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="daily-table-foot moong-foot"><span>💡 All Methi Seeds varieties are combined into one weighted daily average.</span><a href="{{ url_for('export_daily_grain') }}">Export complete grain report →</a></div>
+  </section>
+
+  <section class="daily-moong-panel">
+    <div class="daily-panel-head moong-head">
+      <div>
+        <div class="daily-section-label">🫘 MOONG DAILY ANALYSIS</div>
+        <h2>Moong Average — ₹3,000 Split</h2>
+        <p>Moong is shown separately for every day: total average, <strong>₹3,000 and above</strong>, and <strong>below ₹3,000/qtl</strong>.</p>
+      </div>
+      <a class="daily-export-all moong-export" href="{{ url_for('export_daily_moong') }}">⬇ Export Moong</a>
+    </div>
+    <div class="daily-moong-grid">
+      {% for d in moong_daily_analysis %}
+      <article class="daily-moong-card">
+        <div class="moong-card-top"><span class="daily-date-pill">📅 {{ d['day'] }}</span><a class="moong-day-export" href="{{ url_for('export_daily_moong_day', day=d['day']) }}">Excel</a></div>
+        <div class="moong-total-block"><small>MOONG TOTAL</small><strong>₹{{ "%.2f"|format(d['total_avg'] or 0) }}</strong><span>{{ "%.2f"|format(d['total_qty'] or 0) }} Qtl · ₹{{ "%.2f"|format(d['total_amount'] or 0) }}</span></div>
+        <div class="moong-split-grid">
+          <div class="moong-split high"><small>₹3,000+ AVG</small>{% if d['high_qty'] %}<strong>₹{{ "%.2f"|format(d['high_avg']) }}</strong><span>{{ "%.2f"|format(d['high_qty']) }} Qtl · ₹{{ "%.2f"|format(d['high_amount']) }}</span>{% else %}<strong>—</strong><span>No purchases</span>{% endif %}</div>
+          <div class="moong-split low"><small>BELOW ₹3,000 AVG</small>{% if d['low_qty'] %}<strong>₹{{ "%.2f"|format(d['low_avg']) }}</strong><span>{{ "%.2f"|format(d['low_qty']) }} Qtl · ₹{{ "%.2f"|format(d['low_amount']) }}</span>{% else %}<strong>—</strong><span>No purchases</span>{% endif %}</div>
+        </div>
+      </article>
+      {% else %}<div class="daily-empty"><div>🫘</div><strong>No Moong purchase data yet</strong><span>Moong records will appear here automatically after import.</span></div>{% endfor %}
+    </div>
+    <div class="daily-table-foot moong-foot"><span>💡 ₹3,000 exactly is included in the <b>₹3,000+</b> category.</span><a href="{{ url_for('export_daily_moong') }}">Export complete Moong report →</a></div>
+  </section>
+
+  <section class="daily-summary-panel">
+    <div class="daily-panel-head compact">
+      <div><div class="daily-section-label">📊 DAY SUMMARY</div><h2>Overall Purchase by Day</h2><p>All grains combined for each purchase date.</p></div>
+    </div>
+    <div class="daily-summary-grid">
+      {% for d in day_summaries %}
+      <article class="daily-day-card">
+        <div class="day-card-top"><span class="daily-date-pill">📅 {{ d['day'] }}</span><span class="day-entry-count">{{ d['entries'] }} entries</span></div>
+        <div class="day-card-main"><div><small>TOTAL QTY</small><strong>{{ "%.2f"|format(d['qty'] or 0) }} <i>Qtl</i></strong></div><div><small>TOTAL AMOUNT</small><strong>₹{{ "%.2f"|format(d['amount'] or 0) }}</strong></div><div><small>ALL GRAINS AVG</small><strong class="day-avg">₹{{ "%.2f"|format(d['avg_rate'] or 0) }}</strong></div></div>
+        <a href="{{ url_for('export_daily_grain_day', day=d['day']) }}" class="day-card-export">⬇ Export this day's report</a>
+      </article>
+      {% else %}<div class="daily-empty"><strong>No day summary available.</strong></div>{% endfor %}
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+ const filter=document.getElementById('dayFilter'), table=document.getElementById('dailyGrainTable'), count=document.getElementById('dailyRowCount');
+ if(!filter||!table) return;
+ const rows=[...table.querySelectorAll('tbody tr[data-day]')];
+ function apply(){const v=filter.value;let n=0;rows.forEach(r=>{const show=v==='all'||r.dataset.day===v;r.style.display=show?'':'none';if(show)n++;});count.textContent=n+' row'+(n===1?'':'s');}
+ filter.addEventListener('change',apply); apply();
+})();
+</script>
+{% endblock %}

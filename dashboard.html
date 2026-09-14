@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Mandi Tracker{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+<section class="hero-panel dashboard-hero">
+  <div class="hero-content">
+    <div class="brand-line"><span class="brand-leaf-mark">🌾</span><span>MANDI BUSINESS DASHBOARD</span></div>
+    <h1 class="hero-title">Purchase <em>Overview</em></h1>
+    <p class="hero-subline">Track quantity, purchase value and weighted average rates.</p>
+    <div class="hero-actions">
+      <a class="button button-primary hero-import" href="{{ url_for('import_page') }}"><span class="excel-icon">▣</span> Import Excel <span class="import-chevron">⌄</span></a>
+    </div>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <div class="hero-sun"></div>
+    <div class="hero-haze"></div>
+    <div class="field field-back"></div>
+    <div class="field field-mid"></div>
+    <div class="field field-front"></div>
+    <div class="rice-cluster rice-left">🌾</div>
+    <div class="rice-cluster rice-right">🌾</div>
+    <div class="hero-motto">Better Data<br><strong>Bigger Profits</strong></div>
+  </div>
+</section>
+
+
+
+<section class="stats-grid">
+  <div class="dashboard-stat stat-green">
+    <div class="stat-top"><div><div class="stat-label">Total Quantity</div><div class="stat-value">{{ "%.2f"|format(totals['qty'] or 0) }} <span>Qtl</span></div><div class="stat-note">Overall purchased quantity</div></div><div class="stat-icon">▣</div></div>
+    <div class="stat-watermark">QTL</div>
+  </div>
+  <div class="dashboard-stat stat-blue">
+    <div class="stat-top"><div><div class="stat-label">Total Purchase Amount</div><div class="stat-value">₹{{ "{:,.2f}".format(totals['amount'] or 0) }}</div><div class="stat-note">Total buying value</div></div><div class="stat-icon">₹</div></div>
+    <div class="stat-watermark">₹</div>
+  </div>
+  <div class="dashboard-stat stat-purple">
+    <div class="stat-top"><div><div class="stat-label">Total Entries</div><div class="stat-value">{{ totals['purchases'] or 0 }}</div><div class="stat-note">Purchase records imported</div></div><div class="stat-icon">▤</div></div>
+    <div class="stat-watermark">#</div>
+  </div>
+</section>
+
+<section class="moong-section dashboard-moong">
+  <div class="moong-grid">
+    <div class="moong-card moong-wheat">
+      <div class="moong-photo">🌾</div><div class="moong-copy"><div class="moong-card-title">Wheat Average</div><div class="moong-rate">₹{{ "%.2f"|format(wheat_total_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">All Wheat Varieties: {{ "%.2f"|format(wheat_total_qty or 0) }} Qtl</div></div><div class="moong-watermark">🌾</div>
+    </div>
+    <div class="moong-card moong-mustard">
+      <div class="moong-photo">🌼</div><div class="moong-copy"><div class="moong-card-title">Mustard Average</div><div class="moong-rate">₹{{ "%.2f"|format(mustard_total_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">All Mustard Varieties: {{ "%.2f"|format(mustard_total_qty or 0) }} Qtl</div></div><div class="moong-watermark">🌼</div>
+    </div>
+    <div class="moong-card moong-paddy">
+      <div class="moong-photo">🌾</div><div class="moong-copy"><div class="moong-card-title">Paddy Average</div><div class="moong-rate">₹{{ "%.2f"|format(paddy_total_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">All Paddy Varieties: {{ "%.2f"|format(paddy_total_qty or 0) }} Qtl</div></div><div class="moong-watermark">🌾</div>
+    </div>
+    <div class="moong-card moong-methi">
+      <div class="moong-photo">🌿</div><div class="moong-copy"><div class="moong-card-title">Methi Seeds Average</div><div class="moong-rate">₹{{ "%.2f"|format(methi_total_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">All Methi Seeds Varieties: {{ "%.2f"|format(methi_total_qty or 0) }} Qtl</div></div><div class="moong-watermark">🌿</div>
+    </div>
+    <div class="moong-card moong-total">
+      <div class="moong-photo">🌱</div><div class="moong-copy"><div class="moong-card-title">Moong Average</div><div class="moong-rate">₹{{ "%.2f"|format(moong_total_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">Moong Total: {{ "%.2f"|format(moong_total_qty or 0) }} Qtl</div></div><div class="moong-watermark">🌿</div>
+    </div>
+    <div class="moong-card moong-high">
+      <div class="moong-round-icon">↑</div><div class="moong-copy"><div class="moong-card-title">Moong ₹3,000 &amp; Above</div><div class="moong-rate">₹{{ "%.2f"|format(moong_high_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">Quantity: {{ "%.2f"|format(moong_high_qty or 0) }} Qtl</div></div>
+    </div>
+    <div class="moong-card moong-low">
+      <div class="moong-round-icon">↓</div><div class="moong-copy"><div class="moong-card-title">Moong Below ₹3,000</div><div class="moong-rate">₹{{ "%.2f"|format(moong_low_avg or 0) }} <span>/ Qtl</span></div><div class="moong-meta">Quantity: {{ "%.2f"|format(moong_low_qty or 0) }} Qtl</div></div>
+    </div>
+  </div>
+</section>
+<section class="stats-grid dashboard-summary-grid"><div class="dashboard-stat"><div class="stat-top"><span>Today</span><span>📅</span></div><div class="stat-value">₹{{ '{:,.0f}'.format(today_stats['amount'] or 0) }}</div><div class="stat-meta">{{ '%.2f'|format(today_stats['qty'] or 0) }} Qtl · {{ today_stats['cnt'] }} purchases</div></div><div class="dashboard-stat"><div class="stat-top"><span>This Month</span><span>🗓️</span></div><div class="stat-value">₹{{ '{:,.0f}'.format(month_stats['amount'] or 0) }}</div><div class="stat-meta">{{ '%.2f'|format(month_stats['qty'] or 0) }} Qtl · {{ month_stats['cnt'] }} purchases</div></div><div class="dashboard-stat"><div class="stat-top"><span>Quick Actions</span><span>⚡</span></div><div class="actions"><a class="button button-primary" href="{{url_for('analytics')}}">Analytics</a><a class="button btn-secondary" href="{{url_for('sales')}}">Sales</a><a class="button btn-secondary" href="{{url_for('inventory')}}">Stock</a></div></div></section>
+
+
+<section class="chart-card"><div class="summary-header"><div><h2>📈 Purchase Rate Trend</h2><p>Last purchase dates, weighted average rate and quantity.</p></div><a class="button btn-secondary" href="{{url_for('analytics')}}">Full Analytics →</a></div><div class="chart-wrap"><canvas id="dashRateChart"></canvas></div></section>
+<section class="alert-panel"><div class="summary-header"><div><h2>🔔 Purchase Intelligence</h2><p>Quick signals from your current data.</p></div></div><div class="alert-grid">{% for r in alert_rows[:6] %}<div class="signal"><strong>{{r.grain}}</strong><span>Avg ₹{{'%.2f'|format(r.avg_rate or 0)}} / Qtl</span><small>{{'%.2f'|format(r.qty or 0)}} Qtl</small></div>{% else %}<div class="empty-state">Import purchases to see intelligence signals.</div>{% endfor %}</div></section>
+
+<section class="daily-analysis-section">
+  <div class="section-heading daily-heading">
+    <div>
+      <div class="eyebrow">DAY-WISE PURCHASE ANALYSIS</div>
+      <h2>📅 Daily Purchase Averages</h2>
+      <p>Weighted average purchase rate for every day, with separate Moong averages around ₹3,000/qtl.</p>
+    </div>
+    <div class="daily-badge">DAY<br><span>AVG</span></div>
+  </div>
+
+  <div class="daily-table-wrap">
+    <div class="table-responsive">
+      <table class="dashboard-table daily-average-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Total Amount</th>
+            <th>All Grains Avg</th>
+            <th>Wheat Avg</th>
+            <th>Mustard Avg</th>
+            <th>Paddy Avg</th>
+            <th>Methi Seeds Avg</th>
+            <th>Moong Total Avg</th>
+            <th>Moong ₹3,000+ Avg</th>
+            <th>Moong Below ₹3,000 Avg</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in daily_analysis %}
+          <tr>
+            <td><span class="date-badge">📅 {{ d['day'] }}</span></td>
+            <td><span class="daily-amount">₹{{ "{:,.2f}".format(d['amount'] or 0) }}</span></td>
+            <td><span class="daily-rate">₹{{ "%.2f"|format(d['avg_rate'] or 0) }}</span><small>{{ "%.2f"|format(d['qty'] or 0) }} Qtl</small></td>
+            <td><span class="daily-rate daily-wheat">{% if d['wheat_qty'] > 0 %}₹{{ "%.2f"|format(d['wheat_avg']) }}{% else %}—{% endif %}</span><small>{% if d['wheat_qty'] > 0 %}{{ "%.2f"|format(d['wheat_qty']) }} Qtl{% endif %}</small></td>
+            <td><span class="daily-rate daily-mustard">{% if d['mustard_qty'] > 0 %}₹{{ "%.2f"|format(d['mustard_avg']) }}{% else %}—{% endif %}</span><small>{% if d['mustard_qty'] > 0 %}{{ "%.2f"|format(d['mustard_qty']) }} Qtl{% endif %}</small></td>
+            <td><span class="daily-rate daily-paddy">{% if d['paddy_qty'] > 0 %}₹{{ "%.2f"|format(d['paddy_avg']) }}{% else %}—{% endif %}</span><small>{% if d['paddy_qty'] > 0 %}{{ "%.2f"|format(d['paddy_qty']) }} Qtl{% endif %}</small></td>
+            <td><span class="daily-rate daily-methi">{% if d['methi_qty'] > 0 %}₹{{ "%.2f"|format(d['methi_avg']) }}{% else %}—{% endif %}</span><small>{% if d['methi_qty'] > 0 %}{{ "%.2f"|format(d['methi_qty']) }} Qtl{% endif %}</small></td>
+            <td><span class="daily-rate">{% if d['moong_qty'] > 0 %}₹{{ "%.2f"|format(d['moong_avg']) }}{% else %}—{% endif %}</span><small>{% if d['moong_qty'] > 0 %}{{ "%.2f"|format(d['moong_qty']) }} Qtl{% endif %}</small></td>
+            <td><span class="daily-rate daily-high">{% if d['moong_high_qty'] > 0 %}₹{{ "%.2f"|format(d['moong_high_avg']) }}{% else %}—{% endif %}</span><small>{% if d['moong_high_qty'] > 0 %}{{ "%.2f"|format(d['moong_high_qty']) }} Qtl{% endif %}</small></td>
+            <td><span class="daily-rate daily-low">{% if d['moong_low_qty'] > 0 %}₹{{ "%.2f"|format(d['moong_low_avg']) }}{% else %}—{% endif %}</span><small>{% if d['moong_low_qty'] > 0 %}{{ "%.2f"|format(d['moong_low_qty']) }} Qtl{% endif %}</small></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="10" class="empty-state"><div class="empty-icon">📅</div>No daily purchase data available yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="daily-analysis-section daily-grain-section">
+  <div class="section-heading daily-heading">
+    <div>
+      <div class="eyebrow">VARIETY-WISE DAY-BY-DAY PURCHASE REPORT</div>
+      <h2>🌾 Daily Average — Every Grain &amp; Variety</h2>
+      <p>Each day shows the quantity, total purchase amount and weighted average rate for every grain and its individual variety.</p>
+    </div>
+    <a class="button button-primary" href="{{ url_for('export_daily_grain') }}">⬇ Export All Daily Reports</a>
+  </div>
+
+  <div class="daily-table-wrap">
+    <div class="table-responsive">
+      <table class="dashboard-table daily-average-table daily-grain-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Grain</th>
+            <th>Variety</th>
+            <th>Quantity</th>
+            <th>Total Amount</th>
+            <th>Daily Avg Rate</th>
+            <th>Day Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in daily_grain_analysis %}
+          <tr>
+            <td><span class="date-badge">📅 {{ d['day'] }}</span></td>
+            <td><span class="grain-badge">{{ d['grain'] }}</span></td>
+            <td>{% if d['variety'] %}<span class="variety-badge">{{ d['variety'] }}</span>{% else %}<span class="muted-text">—</span>{% endif %}</td>
+            <td>{{ "%.2f"|format(d['qty'] or 0) }} Qtl</td>
+            <td>₹{{ "%.2f"|format(d['amount'] or 0) }}</td>
+            <td><span class="daily-rate">₹{{ "%.2f"|format(d['avg_rate'] or 0) }}</span></td>
+            <td><a class="daily-export-btn" href="{{ url_for('export_daily_grain_day', day=d['day']) }}">⬇ Excel</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty-state"><div class="empty-icon">🌾</div>No daily grain/variety purchase data available yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="summary-panel">
+  <div class="summary-header"><div class="summary-icon">📊</div><div><h2>Grain Summary</h2><p>Quantity, purchase value and weighted average rate by grain.</p></div></div>
+  <div class="table-wrap"><div class="table-responsive"><table class="dashboard-table"><thead><tr><th>Grain</th><th>Quantity</th><th>Amount</th><th>Weighted Avg Rate</th></tr></thead><tbody>
+  {% for r in grain_rows %}<tr><td><span class="grain-badge">{{ r['grain'] }}</span></td><td>{{ "%.2f"|format(r['qty'] or 0) }} Qtl</td><td>₹{{ "%.2f"|format(r['amount'] or 0) }}</td><td class="rate-cell">₹{{ "%.2f"|format(r['avg_rate'] or 0) }}</td></tr>{% else %}<tr><td colspan="4" class="empty-state"><div class="empty-icon">🌾</div>No grain data available yet.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+</section>
+
+<section class="summary-panel">
+  <div class="summary-header"><div class="summary-icon">🧾</div><div><h2>Recent Purchases</h2><p>Your latest imported mandi purchase entries.</p></div><a class="button button-primary" href="{{ url_for('purchases') }}">View All →</a></div>
+  <div class="table-wrap"><div class="table-responsive"><table class="dashboard-table"><thead><tr><th>Date</th><th>Grain</th><th>Mandi</th><th>Quantity</th><th>Rate</th><th>Amount</th></tr></thead><tbody>
+  {% for r in recent %}<tr><td>{{ r['purchase_date'] }}</td><td><span class="grain-badge">{{ r['grain'] }}</span></td><td>{{ r['mandi'] }}</td><td>{{ "%.2f"|format(r['quantity_quintal'] or 0) }} Qtl</td><td class="rate-cell">₹{{ "%.2f"|format(r['rate'] or 0) }}</td><td>₹{{ "%.2f"|format(r['amount'] or 0) }}</td></tr>{% else %}<tr><td colspan="6" class="empty-state"><div class="empty-icon">📥</div>Import your first Excel file to see purchases here.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
+<script>
+(function(){
+  const canvas=document.getElementById('dashRateChart');
+  if(!canvas) return;
+  fetch('{{url_for("chart_data")}}')
+    .then(r=>r.json())
+    .then(rows=>{
+      const d=(rows||[]).slice(-30);
+      if(!d.length){
+        const wrap=canvas.parentElement;
+        wrap.innerHTML='<div class="chart-empty"><div>📈</div><strong>No purchase trend data yet</strong><span>Import purchase records to see the rate and quantity trend.</span></div>';
+        return;
+      }
+      new Chart(canvas,{
+        type:'line',
+        data:{labels:d.map(x=>x.day),datasets:[
+          {label:'Avg Rate / Qtl',data:d.map(x=>Number(x.avg_rate||0)),tension:.35,borderWidth:3,pointRadius:3,pointHoverRadius:5},
+          {label:'Quantity (Qtl)',data:d.map(x=>Number(x.qty||0)),tension:.35,yAxisID:'y1',borderWidth:3,pointRadius:3,pointHoverRadius:5}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'end'}},scales:{x:{grid:{display:false}},y:{beginAtZero:false,title:{display:true,text:'Rate / Qtl'}},y1:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},title:{display:true,text:'Quantity (Qtl)'}}}}
+      });
+    })
+    .catch(()=>{
+      canvas.parentElement.innerHTML='<div class="chart-empty"><div>⚠️</div><strong>Trend could not be loaded</strong><span>Refresh the dashboard after importing purchase data.</span></div>';
+    });
+})();
+</script>
+{% endblock %}

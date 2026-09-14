@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Excel Import | Mandi Tracker{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="eyebrow">DATA IMPORT</div><h1 class="page-title">Import Excel Purchases</h1><p class="page-subtitle">Upload one or multiple Excel files. Every sheet is checked automatically.</p></div><a class="button btn-secondary" href="{{ url_for('purchases') }}">View Purchases →</a></div>
+<div class="form-card upload-box">
+  <div class="upload-icon">📥</div>
+  <h2>Choose Excel files</h2>
+  <p class="page-subtitle">You can select multiple files at once. Duplicate rows are automatically skipped.</p>
+  <form method="post" enctype="multipart/form-data">
+    <div class="form-group"><input type="file" name="excel_files" class="form-control" accept=".xlsx,.xls,.xlsm" multiple required></div>
+    <button class="button button-primary">📥 Import Selected Files</button>
+  </form>
+  <div class="form-grid import-details">
+    <div class="form-group"><label>Supported files</label><div class="muted">.xlsx, .xls, .xlsm · multiple sheets · automatic header detection.</div></div>
+    <div class="form-group"><label>Quantity handling</label><div class="muted">“वास्तविक वजन” is treated directly as quintals.</div></div>
+  </div>
+</div>
+{% endblock %}
